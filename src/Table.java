@@ -62,19 +62,34 @@ public class Table {
         System.out.println("We'll be playing with " + initialPlayers.intValue() + " players for a total of " + rounds.intValue() + " rounds");
         Players = new ArrayList<Player>(initialPlayers.intValue());
     }
-    public void deal(String[] args){
-
+    public void createPlayerBase(String[] args){
+        for(int i = 0; i< initialPlayers; i++){
+            Players.add(new Player("player " + (i+1)));
+            System.out.println("Player " +(i+1) +" Created");
+        }
+    }
+    public void deal(String[] args, int player){
+        Card e = Deck.get(new Random().nextInt(Deck.size()));
+        Players.get(player).askCard(e);
+        Deck.remove(e);
+    }
+    public void showHand(String[] args, int player){
+        System.out.println("Player " + (player+1) + ": " + Players.get(player).showHand());
     }
     public static void main(String[] args) {
         try {
             Table obj = new Table();
             obj.initialize(args);
+            obj.createPlayerBase(args);
             System.out.println("Welcome to this game, please wait while we deal to everyone");
-            for(int i = 0; i < obj.initialPlayers+1; i++){
-                obj.deal(args);
+            for(int i = 0; i < obj.initialPlayers; i++){
+                obj.deal(args, i);
             }
-            for(int i = 0; i < obj.initialPlayers+1; i++){
-                obj.deal(args);
+            for(int i = 0; i < obj.initialPlayers; i++){
+                obj.deal(args, i);
+            }
+            for(int i = 0; i< obj.initialPlayers; i++){
+                obj.showHand(args, i);
             }
         } catch (Exception e) {
 

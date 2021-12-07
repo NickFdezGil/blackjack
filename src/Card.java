@@ -7,7 +7,6 @@ public class Card {
         this.value = v;
         this.type = t;
     }
-
     @Override
     public String toString() {
         return "Card{" +
