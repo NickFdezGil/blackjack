@@ -1,10 +1,18 @@
 public class Card {
-    private int number;
+    private String value;
     private String type;
 
     //Create the object Card to be use in Table, Player and Dealer
-    public Card(int n, String t){
-        this.number = n;
+    public Card(String v, String t){
+        this.value = v;
         this.type = t;
+    }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "value='" + value + '\'' +
+                ", type='" + type + '\'' +
+                '}';
     }
 }
