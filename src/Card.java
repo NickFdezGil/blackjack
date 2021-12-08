@@ -7,6 +7,10 @@ public class Card {
         this.value = v;
         this.type = t;
     }
+
+    public String getValue(){
+        return value;
+    }
     @Override
     public String toString() {
         return "Card{" +
