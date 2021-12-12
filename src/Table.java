@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.Array;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,11 @@ public class Table {
     private String [] Values = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"};
     private Integer initialPlayers = null;
     private Integer rounds;
+    private int [] handScores;
+    private int [] finalScores;
+    private String [] names = {"Paco", "Maria", "Alvaro", "James"};
 
-    //Initialize the table
+    // Creates a new deck
     public void generateDeck(){
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 13; j ++){
@@ -20,11 +24,15 @@ public class Table {
             }
         }
     }
+
+    // Method to check if generateDeck() and methods for deal work properly (not currently in use)
     public void showRemainingDeck(){
         for(int i = 0; i < Deck.size(); i++){
             System.out.println(Deck.get(i).toString());
         }
     }
+
+    // We initialize the table by asking the players and rounds
     public void initialize(String[] args){
         Scanner console = new Scanner(System.in);
         generateDeck();
@@ -70,10 +78,12 @@ public class Table {
         Players = new ArrayList<Player>(initialPlayers.intValue());
         Dealer = new Dealer();
     }
+
+    // Method to create the player base ,so we have them in a list for easy management
     public void createPlayerBase(String[] args){
         for(int i = 0; i< initialPlayers; i++){
-            Players.add(new Player("player " + (i+1)));
-            System.out.println("Player " +(i+1) +" Created");
+            Players.add(new Player(names [i]));
+            System.out.println("Player " + Players.get(i).getName() +" Created");
         }
     }
 
@@ -84,7 +94,7 @@ public class Table {
         Deck.remove(e);
     }
     public void showHand(String[] args, int player){
-        System.out.println("Player " + (player+1) + ": " + Players.get(player).showHand());
+        System.out.println("Player " + Players.get(player).getName() + ": " + Players.get(player).showHand());
     }
 
     //Methods for the dealer
@@ -97,30 +107,73 @@ public class Table {
         System.out.println("Dealer: " + Dealer.showInitialHand());
     }
     public void showDealerHand(String[] args){System.out.println("Dealer: "+ Dealer.showHand());}
+    public void dealDealerUnit16(String[] args){
+        while(Dealer.HandScore()<16){
+            Card e = Deck.get(new Random().nextInt(Deck.size()));
+            Dealer.askCard(e);
+            Deck.remove(e);
+            showDealerHand(args);
+        }
+    }
 
     //Methods for the endgame
     public void selectWinner(String[] args){
-        int maxScore = Dealer.HandScore();
-        int currentScore = 0;
-        String winner = "Dealer";
-        Integer selected = null;
-        for(int i = 0; i < initialPlayers; i++){
-            currentScore = Players.get(i).HandScore();
-            if(currentScore > maxScore) {
+        // Dealer's score over 21, all remaining players win
+        if(Dealer.HandScore() > 21){
+            System.out.println("Dealer bust, all remaining players win");
+            for(int i=0; i<initialPlayers; i++){
+                if(Players.get(i).HandScore()<=21){
+                    Players.get(i).winner();
+                    System.out.println("Player " + Players.get(i).getName() + " has won a point");
+                } else {
+                    System.out.println("Player " + Players.get(i).getName() + "had bust");
+                }
+            }
+            return;
+        }
+        // Getting the players scores
+        handScores = new int[initialPlayers];
+        // Show the hand score of each player
+        for(int i=0; i < initialPlayers; i++){
+            handScores [i] = Players.get(i).HandScore();
+            System.out.println("Player " + Players.get(i).getName() + " has a score of " + handScores [i]);
+        }
+        int dealersScore = Dealer.HandScore();
+        System.out.println("Dealer has a score of " + dealersScore);
+        int maxScore = handScores [0];
+        int currentScore;
+        String [] winner = new String[initialPlayers];
+        // Compare the scores of the players
+        for(int i = 1; i < initialPlayers; i++) {
+            currentScore = handScores[i];
+            if (currentScore >= maxScore && currentScore >= dealersScore) {
                 maxScore = currentScore;
-                winner = "Player " + (i+1);
-                selected = i;
             }
         }
-        if(selected == null){
-            Dealer.winner();
+        // Include in array of winners the players with their score greater or equal to maxScore
+        for(int l = 0; l < initialPlayers; l++){
+            if(Players.get(l).HandScore() >= maxScore){
+                winner [l] = Players.get(l).getName();
+            }
         }
-        else{Players.get(selected).winner();}
-        System.out.println("The winner of this round was " + winner);
+        // If dealer scores same or more than maxScore, dealer wins
+        if(dealersScore >= maxScore){
+            Dealer.winner();
+            System.out.println("Dealer has won the round");
+        }
+        // Show all the winners
+        else{
+            for(int j = 0; j < initialPlayers; j++){
+                if(winner [j] == Players.get(j).getName()) {
+                    Players.get(j).winner();
+                    System.out.println("Player " + Players.get(j).getName() + " has won a point");
+                }
+            }
+        }
     }
     public void showTotalWins(String[] args){
         for(int i = 0; i < initialPlayers; i++){
-            System.out.println("Player " + (i+1) + " has won " + Players.get(i).getScore() + " rounds");
+            System.out.println("Player " + Players.get(i).getName() + " has won " + Players.get(i).getScore() + " rounds");
         }
         System.out.println("Dealer has won " + Dealer.getScore() + " rounds");
     }
@@ -134,28 +187,54 @@ public class Table {
         Deck.clear();
         generateDeck();
     }
+
+    // Select player o players with the highest score
     public void getFinalWinner(String[] args){
-        int maxScore = Dealer.getScore();
-        int currentScore = 0;
-        String winner = "Dealer";
-        Integer selected = null;
-        for(int i = 0; i < initialPlayers; i++){
-            currentScore = Players.get(i).getScore();
-            if(currentScore > maxScore){
+        finalScores = new int[initialPlayers];
+        for(int i=0; i < initialPlayers; i++){
+            finalScores [i] = Players.get(i).getScore();
+            System.out.println("Player " + Players.get(i).getName() + " has a score of " + finalScores [i]);
+        }
+        int dealersScore = Dealer.getScore();
+        System.out.println("Dealer has a score of " + dealersScore);
+        int maxScore = finalScores [0];
+        int currentScore;
+        String [] winner = new String[initialPlayers];
+        for(int i = 1; i < initialPlayers; i++) {
+            currentScore = finalScores[i];
+            if (currentScore >= maxScore && currentScore >= dealersScore) {
                 maxScore = currentScore;
-                winner = "Player " + (i+1);
-                selected = i;
             }
         }
-        if (selected == null) {System.out.println("The dealer won the game");}
-        else{System.out.println(winner + " has won the game, congratulations");}
+        // Include in array of winners the players with their score greater or equal to maxScore
+        for(int i = 0; i < initialPlayers; i++){
+            if(Players.get(i).getScore() >= maxScore){
+                winner [i] = Players.get(i).getName();
+            }
+        }
+        // If dealer scores same or more than maxScore, dealer wins
+        if(dealersScore >= maxScore){
+            Dealer.winner();
+            System.out.println("Dealer has won the game");
+        }
+        // Show all the winners
+        else{
+            for(int i = 0; i < initialPlayers; i++){
+                if(winner [i] == Players.get(i).getName()) {
+                    Players.get(i).winner();
+                    System.out.println("Player " + Players.get(i).getName() + " has won the game");
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
         try {
             Table obj = new Table();
             obj.initialize(args);
+            System.out.println(" ");
             obj.createPlayerBase(args);
+            System.out.println(" ");
             System.out.println("Welcome to this game, please wait while we deal to everyone");
             for(int i = obj.rounds; i > 0; i--) {
                 for (int j = 0; j < obj.initialPlayers; j++) {
@@ -170,10 +249,15 @@ public class Table {
                     obj.showHand(args, j);
                 }
                 obj.showInitialDealerHand(args);
+                System.out.println(" ");
                 System.out.println("Now that everyone has been dealt, we will choose a winner");
                 obj.showDealerHand(args);
+                obj.dealDealerUnit16(args);
+                System.out.println(" ");
                 obj.selectWinner(args);
+                System.out.println(" ");
                 obj.showTotalWins(args);
+                System.out.println(" ");
                 if(i>1) {
                     if (i > 2) {
                         System.out.println("End of round, we will deal again and play the " + (i - 1) + " remaining rounds");
