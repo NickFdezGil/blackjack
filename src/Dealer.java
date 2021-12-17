@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Dealer {
-    private String name;
-    private String current = "";
     private int score;
     private List<Card> hand = new ArrayList<>(11);
 
@@ -27,7 +25,7 @@ public class Dealer {
         return e + ", Hidden Score: " + initialScore;
     }
     public String showHand(){
-        current = "";
+        String current = "";
         for(int i = 0; i < hand.size(); i++){
             Card e = hand.get(i);
             current = current + e.toString() + ", ";
@@ -39,16 +37,23 @@ public class Dealer {
     }
     public int HandScore(){
         int handScore = 0;
+        boolean isAce = false;
         for(int i=0; i < hand.size(); i++){
             String value = "";
             Card e = hand.get(i);
             value = e.getValue();
-            if(value.equals("Ace") && handScore<21){handScore = handScore + 11; }
-            else if(value.equals("Ace") && handScore>21){handScore = handScore + 1; }
+            if(value.equals("Ace")){
+                if(isAce == true){ handScore = handScore + 1; }
+                else{ isAce = true; }
+            }
             else if(value.equals("Jack") || value.equals("Queen") || value.equals("King")){handScore = handScore + 10;}
             else{
                 handScore = handScore + Integer.parseInt(value);
             }
+        }
+        if(isAce == true){
+            if(handScore<11){ handScore = handScore + 11;}
+            else{handScore = handScore + 1;}
         }
         return handScore;
     }

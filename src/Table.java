@@ -96,6 +96,14 @@ public class Table {
     public void showHand(String[] args, int player){
         System.out.println("Player " + Players.get(player).getName() + ": " + Players.get(player).showHand());
     }
+    public void dealUnit21(String[] args, int player){
+        int score = Players.get(player).HandScore();
+        while(score<21){
+            deal(args,player);
+            showHand(args,player);
+            score = Players.get(player).HandScore();
+        }
+    }
 
     //Methods for the dealer
     public void dealDealer(String[] args){
@@ -248,6 +256,11 @@ public class Table {
                 for (int j = 0; j < obj.initialPlayers; j++) {
                     obj.showHand(args, j);
                 }
+
+                for(int j = 0; j < obj.initialPlayers; j++){
+                    obj.dealUnit21(args,j);
+                }
+
                 obj.showInitialDealerHand(args);
                 System.out.println(" ");
                 System.out.println("Now that everyone has been dealt, we will choose a winner");
