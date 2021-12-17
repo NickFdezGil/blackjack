@@ -96,14 +96,6 @@ public class Table {
     public void showHand(String[] args, int player){
         System.out.println("Player " + Players.get(player).getName() + ": " + Players.get(player).showHand());
     }
-    public void dealUnit21(String[] args, int player){
-        int score = Players.get(player).HandScore();
-        while(score<21){
-            deal(args,player);
-            showHand(args,player);
-            score = Players.get(player).HandScore();
-        }
-    }
 
     //Methods for the dealer
     public void dealDealer(String[] args){
@@ -134,7 +126,7 @@ public class Table {
                     Players.get(i).winner();
                     System.out.println("Player " + Players.get(i).getName() + " has won a point");
                 } else {
-                    System.out.println("Player " + Players.get(i).getName() + "had bust");
+                    System.out.println("Player " + Players.get(i).getName() + " had bust");
                 }
             }
             return;
@@ -148,20 +140,18 @@ public class Table {
         }
         int dealersScore = Dealer.HandScore();
         System.out.println("Dealer has a score of " + dealersScore);
-        int maxScore = handScores [0];
+        int maxScore = 0;
         int currentScore;
         String [] winner = new String[initialPlayers];
         // Compare the scores of the players
-        for(int i = 1; i < initialPlayers; i++) {
+        for(int i = 0; i < initialPlayers; i++) {
             currentScore = handScores[i];
-            if (currentScore >= maxScore && currentScore >= dealersScore) {
+            if (currentScore >= maxScore && currentScore >= dealersScore && currentScore<22) {
                 maxScore = currentScore;
+                winner [i] = Players.get(i).getName();
             }
-        }
-        // Include in array of winners the players with their score greater or equal to maxScore
-        for(int l = 0; l < initialPlayers; l++){
-            if(Players.get(l).HandScore() >= maxScore){
-                winner [l] = Players.get(l).getName();
+            else{
+                System.out.println("Player " + Players.get(i).getName() + " has bust ");
             }
         }
         // If dealer scores same or more than maxScore, dealer wins
@@ -258,7 +248,7 @@ public class Table {
                 }
 
                 for(int j = 0; j < obj.initialPlayers; j++){
-                    obj.dealUnit21(args,j);
+                    obj.deal(args,j);
                 }
 
                 obj.showInitialDealerHand(args);
